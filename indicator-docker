@@ -1,0 +1,199 @@
+#!/usr/bin/env python3
+"""
+Copyright (C) 2012-2015 Dmitry Kann, http://yktoo.com
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 3, as published
+by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranties of
+MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
+PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program.  If not, see <http://www.gnu.org/licenses/>.
+---------------------------------------------------------------------------
+Note for developers: some PEP8 rules are neglected here, namely:
+- E211
+- E221
+- E241
+- E402
+"""
+
+import sys
+import logging
+import gettext
+import docker
+
+from gi import require_version
+from gi.repository import GObject
+
+require_version('Gtk', '3.0')
+from gi.repository import Gtk
+
+require_version('AppIndicator3', '0.1')
+from gi.repository import AppIndicator3 as AppIndicator
+
+# Global definitions
+APP_ID      = 'indicator-docker'
+APP_NAME    = 'Docker Indicator'
+APP_ICON    = 'indicator-docker'
+APP_VERSION = '0.1.0'
+APP_LICENCE = """This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 3, as published
+by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranties of
+MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
+PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program. If not, see http://www.gnu.org/licenses/"""
+
+
+def _parse_cmd_line():
+    """Parse command line arguments. Currently only sets up logging."""
+    # Check command line arguments
+    lvl = logging.WARNING
+    for arg in sys.argv:
+        if arg == '-v':
+            lvl = logging.INFO
+            break
+        elif arg == '-vv':
+            lvl = logging.DEBUG
+            break
+    # Set up logging options
+    logging.basicConfig(level=lvl, format='%(levelname).3s %(message)s')
+
+
+class DockerIndicator(GObject.GObject):
+
+    def __init__(self):
+        """Constructor."""
+        GObject.GObject.__init__(self)
+
+        self.item_separator = None
+
+        # Create the indicator object
+        self.ind = AppIndicator.Indicator.new(APP_ID, APP_ICON, AppIndicator.IndicatorCategory.HARDWARE)
+        self.ind.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+
+        # Create a menu
+        self.menu = Gtk.Menu()
+        self.ind.set_menu(self.menu)
+        self.menu_setup()
+
+        # Connect to the Docker daemon
+        self.dclient = docker.from_env()
+
+        # Update the items
+        self.menu_update_containers()
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Signal handlers
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def item_about(self, widget, buf):
+        """Handler of about item click event."""
+        logging.debug('.item_about()')
+        dialog = Gtk.AboutDialog()
+        dialog.set_program_name(APP_NAME)
+        dialog.set_copyright(_('Written by Dmitry Kann'))
+        dialog.set_license(APP_LICENCE)
+        dialog.set_version(APP_VERSION)
+        dialog.set_website('http://yktoo.com')
+        dialog.set_website_label('yktoo.com')
+        dialog.set_logo_icon_name(APP_ICON)
+        dialog.connect('response', lambda x, y: dialog.destroy())
+        dialog.run()
+
+    def item_quit(self, widget, buf):
+        """Terminates the app."""
+        logging.debug('.item_quit()')
+        self.shutdown()
+
+    def item_refresh(self, widget, buf):
+        """Handler of refresh item click event."""
+        logging.debug('.item_refresh()')
+        self.update_all_pa_items()
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Other methods
+    # ------------------------------------------------------------------------------------------------------------------
+
+    @staticmethod
+    def main():
+        """The main app function."""
+        # Run the main event loop
+        Gtk.main()
+
+    def menu_append_item(self, label: str=None, activate_signal=None):
+        """Adds an item (if label is None then separator item) to the indicator menu. Returns the created item."""
+        if label is None:
+            item = Gtk.SeparatorMenuItem()
+        else:
+            item = Gtk.MenuItem.new_with_mnemonic(label)
+            if activate_signal is not None:
+                item.connect("activate", activate_signal, None)
+            else:
+                item.set_sensitive(False)
+        item.show()
+        self.menu.append(item)
+        return item
+
+    def menu_insert_ordered_item(self, after_item, before_item, label: str, show: bool):
+        """Inserts a new menu item into the menu between after_item and before_item, maintaining alphabetical order of
+        the items.
+
+        :returns Created item.
+        """
+        # Find out item indexes
+        items = self.menu.get_children()
+        idx_from = 0 if after_item is None else items.index(after_item) + 1
+        idx_to   = items.index(before_item)
+
+        # Create and setup a new radio item
+        new_item = Gtk.MenuItem.new_with_mnemonic(label)
+        if show:
+            new_item.show()
+
+        # Find an appropriate position for the item so that they are in alphabetical order
+        i = idx_from
+        while (i < idx_to) and (label >= items[i].get_label()):
+            i += 1
+
+        # Insert the item
+        self.menu.insert(new_item, i)
+        return new_item
+
+    def menu_setup(self):
+        """Initializes indicator menu."""
+
+        # Add static items
+        self.item_separator = self.menu_append_item()
+        self.menu_append_item(_('_Refresh'), self.item_refresh)
+        self.menu_append_item(_('_About'),   self.item_about)
+        self.menu_append_item(_('_Quit'),    self.item_quit)
+
+    def menu_update_containers(self):
+        """Updates the list of containers."""
+
+        for container in self.dclient.containers.list():
+            self.menu_insert_ordered_item(None, self.item_separator, container.name, True)
+
+    def shutdown(self):
+        """Shuts down the app."""
+        Gtk.main_quit()
+
+if __name__ == "__main__":
+    # Set up the gettext localisation engine
+    gettext.install(APP_ID)
+
+    # Parse the command line
+    _parse_cmd_line()
+
+    # Instantiate and run the indicator
+    indicator = DockerIndicator()
+    indicator.main()
