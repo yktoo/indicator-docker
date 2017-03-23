@@ -14,7 +14,8 @@ PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along
 with this program.  If not, see <http://www.gnu.org/licenses/>.
 ---------------------------------------------------------------------------
-Note for developers: some PEP8 rules are neglected here, namely:
+Note for developers: some PEP8 rules are deliberately neglected here,
+namely:
 - E211
 - E221
 - E241
@@ -34,6 +35,8 @@ from gi.repository import Gtk
 
 require_version('AppIndicator3', '0.1')
 from gi.repository import AppIndicator3 as AppIndicator
+
+from indicator_docker.event_thread import EventThread
 
 # Global definitions
 APP_ID      = 'indicator-docker'
@@ -90,6 +93,10 @@ class DockerIndicator(GObject.GObject):
 
         # Update the items
         self.menu_update_containers()
+
+        # Start the event handler thread
+        self.event_thread = EventThread(self.dclient)
+        self.event_thread.start()
 
     # ------------------------------------------------------------------------------------------------------------------
     # Signal handlers
@@ -185,6 +192,11 @@ class DockerIndicator(GObject.GObject):
 
     def shutdown(self):
         """Shuts down the app."""
+        # Shut down the event handler thread (and give it a sec to clean up)
+        self.event_thread.terminated = True
+        self.event_thread.join(1.0)
+
+        # Quit the app
         Gtk.main_quit()
 
 if __name__ == "__main__":
