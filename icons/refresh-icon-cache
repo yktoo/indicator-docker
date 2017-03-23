@@ -1,0 +1,2 @@
+#!/bin/sh
+sudo update-icon-caches /usr/share/icons/*
