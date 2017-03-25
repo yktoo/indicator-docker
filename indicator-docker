@@ -73,11 +73,14 @@ def _parse_cmd_line():
 
 class DockerIndicator(GObject.GObject):
 
+    STATUSES_IN_SCOPE = ['create', 'die', 'destroy']
+
     def __init__(self):
         """Constructor."""
         GObject.GObject.__init__(self)
 
         self.item_separator = None
+        self.num_containers = 0
 
         # Create the indicator object
         self.ind = AppIndicator.Indicator.new(APP_ID, APP_ICON, AppIndicator.IndicatorCategory.HARDWARE)
@@ -92,10 +95,10 @@ class DockerIndicator(GObject.GObject):
         self.dclient = docker.from_env()
 
         # Update the items
-        self.menu_update_containers()
+        self.update_list()
 
         # Start the event handler thread
-        self.event_thread = EventThread(self.dclient)
+        self.event_thread = EventThread(self.dclient, self.event_callback)
         self.event_thread.start()
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -124,7 +127,22 @@ class DockerIndicator(GObject.GObject):
     def item_refresh(self, widget, buf):
         """Handler of refresh item click event."""
         logging.debug('.item_refresh()')
-        self.update_all_pa_items()
+        self.update_list()
+
+    def item_container_select(self, widget, buf):
+        """Handler of container item click event."""
+        logging.debug('.item_container_select()')
+        # TODO
+
+    def event_callback(self, event):
+        """Event handler callback."""
+        # Check the event's status
+        if 'status' not in event:
+            return
+        status = event['status']
+        if status in self.STATUSES_IN_SCOPE:
+            # Pass the event on to the main GUI thread
+            GObject.idle_add(self.update_list)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Other methods
@@ -143,14 +161,14 @@ class DockerIndicator(GObject.GObject):
         else:
             item = Gtk.MenuItem.new_with_mnemonic(label)
             if activate_signal is not None:
-                item.connect("activate", activate_signal, None)
+                item.connect('activate', activate_signal, None)
             else:
                 item.set_sensitive(False)
         item.show()
         self.menu.append(item)
         return item
 
-    def menu_insert_ordered_item(self, after_item, before_item, label: str, show: bool):
+    def menu_insert_ordered_item(self, after_item, before_item, label: str, show: bool, activate_signal):
         """Inserts a new menu item into the menu between after_item and before_item, maintaining alphabetical order of
         the items.
 
@@ -161,10 +179,11 @@ class DockerIndicator(GObject.GObject):
         idx_from = 0 if after_item is None else items.index(after_item) + 1
         idx_to   = items.index(before_item)
 
-        # Create and setup a new radio item
-        new_item = Gtk.MenuItem.new_with_mnemonic(label)
+        # Create and setup a new check item
+        new_item = Gtk.CheckMenuItem.new_with_label(label)
         if show:
             new_item.show()
+        new_item.connect('activate', activate_signal, None)
 
         # Find an appropriate position for the item so that they are in alphabetical order
         i = idx_from
@@ -184,11 +203,20 @@ class DockerIndicator(GObject.GObject):
         self.menu_append_item(_('_About'),   self.item_about)
         self.menu_append_item(_('_Quit'),    self.item_quit)
 
-    def menu_update_containers(self):
+    def update_list(self):
         """Updates the list of containers."""
+        # Clean up the menu
+        items = self.menu.get_children()
+        for i in range(0, self.num_containers):
+            self.menu.remove(items[i])
 
-        for container in self.dclient.containers.list():
-            self.menu_insert_ordered_item(None, self.item_separator, container.name, True)
+        # Load container list
+        self.num_containers = 0
+        for container in self.dclient.containers.list(all=True):
+            item = self.menu_insert_ordered_item(None, self.item_separator, container.name, True, self.item_container_select)
+            # TODO inhibit the handler
+            item.set_active(container.status == 'running')
+            self.num_containers += 1
 
     def shutdown(self):
         """Shuts down the app."""
@@ -199,7 +227,7 @@ class DockerIndicator(GObject.GObject):
         # Quit the app
         Gtk.main_quit()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # Set up the gettext localisation engine
     gettext.install(APP_ID)
 
