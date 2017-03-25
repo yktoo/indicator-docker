@@ -22,6 +22,14 @@ Requirements
 * docker (`sudo pip install docker`)
 
 
+How to run
+----------
+
+Sorry folks, no installer available yet. To run the app prefix its name with the path to its `lib` dir:
+
+    PYTHONPATH=lib ./indicator-docker
+
+
 Bug Reporting
 -------------
 
