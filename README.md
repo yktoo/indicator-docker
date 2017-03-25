@@ -28,19 +28,19 @@ How to run
 Sorry folks, no installer available yet. To run the app:
 
 1. Copy app icons:
-
+    ```bash
     sudo cp ./icons/default/indicator-docker.svg /usr/share/icons/hicolor/22x22/status/
     sudo cp ./icons/ubuntu-mono-dark/indicator-docker.svg /usr/share/icons/ubuntu-mono-dark/status/22/
     sudo cp ./icons/ubuntu-mono-light/indicator-docker.svg /usr/share/icons/ubuntu-mono-light/status/22/
-
+    ```
 2. Update icon cache:
-
+    ```bash
     sudo update-icon-caches /usr/share/icons/*
-
+    ```
 3. Run the app prefixing its name with the path to its `lib` dir:
-
+    ```bash
     PYTHONPATH=lib ./indicator-docker
-
+    ```
 
 Bug Reporting
 -------------
