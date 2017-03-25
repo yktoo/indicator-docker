@@ -1,8 +1,9 @@
 Docker Indicator
 ================
 
-A very basic implementation of application indicator for controlling [Docker](https://www.docker.com/) containers.
+A very basic implementation of Ubuntu/Unity application indicator for controlling [Docker](https://www.docker.com/) containers.
 
+![Screenshot of the indicator](Screenshot.png)
 
 Available functionality
 -----------------------
@@ -19,3 +20,14 @@ Requirements
 * gir1.2-appindicator3-0.1
 * gettext
 * docker (`sudo pip install docker`)
+
+
+Bug Reporting
+-------------
+
+Run the application in verbose mode to see the detailed log:
+
+    indicator-docker -vv
+
+and, once the error condition has been reproduced, attach the output to the report.
+
