@@ -1,0 +1,24 @@
+.TH indicator-docker 1 2017-03-27 "" ""
+.SH NAME
+indicator-docker \- Docker application indicator.
+.SH SYNOPSIS
+.BR indicator-docker " [options]"
+.SH DESCRIPTION
+.B indicator-docker
+is a simple yet usable application indicator for Ubuntu/Unity. It provides
+a very straightforward way of starting and stopping Docker containers.
+
+This application would normally start automatically after logging in, but can
+also be run manually from the command line.
+.SH OPTIONS
+.TP
+.BR \-v
+Verbose output. With this option \fBINFO\fP messages will also be output (by
+default only \fBWARNING\fP, \fBERROR\fP and \fBCRITICAL\fP messages are output
+to the console).
+.TP
+.BR \-vv
+Even more verbose output. With this option all messages (including \fBDEBUG\fP
+ones) will be printed to the console.
+.SH AUTHOR
+Dmitry Kann (yktooo@gmail.com)

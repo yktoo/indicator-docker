@@ -165,9 +165,9 @@ class DockerIndicator(GObject.GObject):
         """Event handler. Is called in the context of the main GUI thread."""
         # Send a desktop notification
         if event['status'] == 'start':
-            self.notify(_('Container "{}" has been started'.format(event['Actor']['Attributes']['name'])))
+            self.notify(_('Container "{}" has been started').format(event['Actor']['Attributes']['name']))
         elif event['status'] == 'stop':
-            self.notify(_('Container "{}" has been stopped'.format(event['Actor']['Attributes']['name'])))
+            self.notify(_('Container "{}" has been stopped').format(event['Actor']['Attributes']['name']))
 
         # Update the container menu
         self.update_list()

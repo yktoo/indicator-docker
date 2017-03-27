@@ -1,0 +1,11 @@
+[Desktop Entry]
+Categories=Utility;
+Comment=Application indicator to control Docker containers.
+Exec=indicator-docker
+Hidden=False
+Icon=indicator-docker
+Name=Docker Indicator
+StartupNotify=true
+Terminal=false
+Type=Application
+X-GNOME-Autostart-enabled=true
