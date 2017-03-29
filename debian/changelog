@@ -1,5 +1,11 @@
+indicator-docker (0.1.0-1ubuntu1) yakkety; urgency=low
+
+  * Depend on any available Docker package name.
+
+ -- Dmitry Kann <yktooo@gmail.com>  Wed, 29 Mar 2017 10:26:04 +0200
+
 indicator-docker (0.1.0-1) yakkety; urgency=low
 
   * Initial release.
 
- -- Dmitry Kann <yktooo@gmail.com>  Fri, 27 Mar 2017 10:00:00 +0100
+ -- Dmitry Kann <yktooo@gmail.com>  Mon, 27 Mar 2017 10:00:00 +0100
