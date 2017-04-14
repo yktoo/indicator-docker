@@ -69,7 +69,7 @@ data_files = [
 # Configure
 setup(
     name=APP_ID,
-    version='0.1.0',
+    version='0.1.0ubuntu0',
     description='Application indicator to control Docker containers',
     author='Dmitry Kann',
     author_email='yktooo@gmail.com',

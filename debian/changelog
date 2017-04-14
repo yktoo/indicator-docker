@@ -1,4 +1,4 @@
-indicator-docker (0.1.0-1ubuntu1) yakkety; urgency=low
+indicator-docker (0.1.0ubuntu0-1) yakkety; urgency=low
 
   * Depend on any available Docker package name.
 
