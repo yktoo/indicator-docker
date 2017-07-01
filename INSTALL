@@ -1,6 +1,13 @@
 Installation of the Docker Indicator
 ============================================
 
+Prerequisites
+-------------
+
+  1. `docker` module for Python 3. The version available in Ubuntu repository is too old, so I advise to install it separately with:
+
+    sudo pip3 install docker
+
 
 Installation from package
 -------------------------

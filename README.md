@@ -19,7 +19,7 @@ Requirements
 * Python 3
 * gir1.2-appindicator3-0.1
 * gettext
-* docker (`sudo pip install docker`)
+* docker (`sudo pip3 install docker`)
 
 
 Installation
