@@ -11,8 +11,8 @@ APP_ID     = 'indicator-docker'
 
 
 def compile_lang_files() -> list:
-    """(Re)generates .mo files from the available .po files, if any. Returns a list of .mo files to be packaged or
-    installed.
+    """(Re)generate .mo files from the available .po files, if any.
+    :return: a list of .mo files to be packaged or installed
     """
     # Get a canonical locale path
     locale_dir = os.path.abspath(LOCALE_DIR)
