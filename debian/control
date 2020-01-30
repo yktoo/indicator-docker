@@ -21,7 +21,7 @@ Depends:
  gir1.2-appindicator3-0.1,
  libcanberra-gtk-module,
  gettext,
- docker | docker-engine | docker-engine-cs | docker.io | lxc-docker | lxc-docker-virtual-package
+ docker | docker-engine | docker-engine-cs | docker.io | lxc-docker | lxc-docker-virtual-package | docker-ce
 Description: Docker application indicator
  A simple yet usable application indicator for Ubuntu/Unity. It provides
  a very straightforward way of starting and stopping Docker containers.
